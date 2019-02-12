@@ -59,7 +59,7 @@ fn find_colour (ray : &Ray, objects: & Vec<Box<Hitable>>,
 			let cn = find_colour(&new_ray, &objects, depth + 1 );
 			let cn = Color::new ( cn.r * albedo.r, cn.g * albedo.g, cn.b * albedo.b );
 
-			cn
+			cn + hit.emited
 		},
 		None => {
 			let unit_direction = ray.get_direction();
@@ -99,8 +99,12 @@ fn main() {
 	objects.push(Box::new( Sphere{ center : Vec3::new(  0.4, -0.8, 2.0 ) , radius :0.1, material : metal_1.clone() }));
 	objects.push(Box::new( Sphere{ center : Vec3::new(  0.3, -0.7, 2.3 ) , radius :0.15, material : glass }));
 
-	let plane_material = Box::new( Lambertian { albedo : Rc::new( ChessTexture{color_a : Color::new (0.0, 0.0, 0.0), color_b :Color::new (1.0, 1.0, 1.0), scale : 1.0}) } );
-	objects.push(Box::new( Plane{ normal : Vec3::new(  0.0, 1.0, 0.0 ) , d :0.9, material : plane_material }));
+	let glowering_material = Box::new( BlackBody { radiation : Color::new (3.0, 2.0, 1.0) } );
+	objects.push(Box::new( Sphere{ center : Vec3::new(  0.7, -0.6, 3.0 ) , radius :0.15, material : glowering_material }));
+
+
+	let plane_material = Box::new( Lambertian { albedo : Rc::new( ChessTexture{color_a : Color::new (0.1, 0.1, 0.1), color_b :Color::new (1.0, 1.0, 1.0), scale : 1.0}) } );
+	objects.push(Box::new( Plane{ normal : Vec3::new( 0.0, 1.0, 0.0 ) , d :0.9, material : plane_material }));
 
 	for x in 0..800 {
 		for y in 0..600{
@@ -124,7 +128,7 @@ fn main() {
 			}
 
 			let k = 1.0 / ( smpl as f32 );
-			color_accm =  k * &color_accm ; // todo override oppertor
+			color_accm = 0.5 * k * &color_accm ; // todo override oppertor
 
 			c.point( x, y, color_accm.as_u32() );
 		}

@@ -8,6 +8,10 @@ use std::rc::Rc;
 
 pub trait Material  { 
 	fn scatter( &self, dir: &Vec3, normal: &Vec3, pos: &Vec3, u : f32, v : f32  ) -> (Ray, Color );
+	fn emit ( &self, dir: &Vec3, normal: &Vec3, pos: &Vec3, u : f32, v : f32  ) -> (Color)
+	{
+		return Color::new(0.0,0.0,0.0);
+	}
 }
 
 #[derive(  Clone )]
@@ -18,7 +22,7 @@ pub struct Lambertian {
 impl Material for Lambertian {
 	fn scatter( &self, dir: &Vec3, normal: &Vec3, pos: &Vec3, u : f32, v : f32) -> (Ray, Color )
 	{
-		let new_dir =  normal + random_in_unit_sphere();
+		let new_dir =  normal + 1.2*random_in_unit_sphere();
 		let new_ray = Ray::new( pos, &new_dir );
 		(new_ray, self.albedo.value(u,v))
 	}
@@ -70,5 +74,22 @@ impl Material for Glass {
 		let new_ray = if random() > prob { Ray::new(pos, &refracted.unwrap() ) } else { Ray::new(pos, &reflect(dir, &outward)  ) };
 
 		(new_ray, self.albedo.clone())
+	}
+}
+
+#[derive( Copy, Clone )]
+pub struct BlackBody {
+	pub radiation : Color
+}
+
+impl Material for BlackBody {
+	fn scatter( &self, dir: &Vec3, normal: &Vec3, pos: &Vec3, u : f32, v : f32  ) -> (Ray, Color )
+	{
+		let new_ray = Ray::new(pos, &normal ) ;
+		(new_ray, Color::new( 0.0,0.0,0.0))
+	}
+	fn emit ( &self, dir: &Vec3, normal: &Vec3, pos: &Vec3, u : f32, v : f32  ) -> (Color)
+	{
+		return self.radiation.clone();
 	}
 }

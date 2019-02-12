@@ -8,7 +8,8 @@ pub struct Hit {
 	pub pos : Vec3, //Todo already in scattered
 	pub normal : Vec3,
 	pub scattered : Ray,
-	pub albedo : Color
+	pub albedo : Color,
+	pub emited : Color
 }
 
 pub trait Hitable { 
@@ -51,13 +52,15 @@ impl Hitable for Sphere
 		let n = ( &hit_point - &self.center ) / self.radius;
 
 		let (scattered, albedo) = self.material.scatter( &ray.direction, &n, &hit_point,0.0,0.0 );
+		let emited = self.material.emit( &ray.direction, &n, &hit_point,0.0,0.0);
 
 		return Some( Hit{
 			distance,
 			pos : hit_point,
 			normal: n,
 			scattered,
-			albedo
+			albedo,
+			emited
 		} );
 		
 	}
@@ -90,13 +93,14 @@ impl Hitable for Plane {
 		let hit_point = ray.get_point(distance);
 
 		let (scattered, albedo) = self.material.scatter( &ray.direction ,&n, &hit_point,hit_point.x,hit_point.z);
-
+		let emited = self.material.emit( &ray.direction, &n, &hit_point,0.0,0.0);
 		return Some( Hit{
 			distance,
 			pos : hit_point,
 			normal: n,
 			scattered,
-			albedo
+			albedo,
+			emited
 		} );
 		
 	}
