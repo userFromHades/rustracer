@@ -50,7 +50,7 @@ impl Hitable for Sphere
 
 		let n = ( &hit_point - &self.center ) / self.radius;
 
-		let (scattered, albedo) = self.material.scatter( &ray.direction, &n, &hit_point );
+		let (scattered, albedo) = self.material.scatter( &ray.direction, &n, &hit_point,0.0,0.0 );
 
 		return Some( Hit{
 			distance,
@@ -89,7 +89,7 @@ impl Hitable for Plane {
 
 		let hit_point = ray.get_point(distance);
 
-		let (scattered, albedo) = self.material.scatter( &ray.direction ,&n, &hit_point);
+		let (scattered, albedo) = self.material.scatter( &ray.direction ,&n, &hit_point,hit_point.x,hit_point.z);
 
 		return Some( Hit{
 			distance,

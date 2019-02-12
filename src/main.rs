@@ -11,12 +11,16 @@ mod hitable;
 mod color;
 mod random;
 mod material;
+mod texture;
 
 use self::vec_math::*;
 use self::hitable::*;
 use self::material::*;
 use self::color::*;
 use self::random::*;
+use self::texture::*;
+
+use std::rc::Rc;
 
 
 fn find_colour (ray : &Ray, objects: & Vec<Box<Hitable>>, 
@@ -24,7 +28,7 @@ fn find_colour (ray : &Ray, objects: & Vec<Box<Hitable>>,
 {
 
 	if depth > 15 {
-		return Color::new ( 0.2, 0.0, 0.0 );
+		return Color::new ( 0.0, 0.0, 0.0 );
 	}
 
 	let mut hit : Option<Hit> = None;
@@ -81,8 +85,7 @@ fn main() {
 	let vertical        = Vec3::new( 0.0, 1.0, 0.0 );
 	let horizontal      = Vec3::new( 1.0, 0.0, 0.0 );
 
-	let material = Box::new( Lambertian { albedo : Color::new (0.5, 0.5, 0.5) } );
-	let lambertian = Box::new( Lambertian { albedo : Color::new (0.1, 0.5, 0.1) } );
+	let material = Box::new( Lambertian { albedo : Rc::new(ConstantTexture{  color : Color::new (0.5, 0.5, 0.5) }) } );
 	let metal_1 = Box::new( Metal {albedo : Color::new (0.5,0.5,0.6), fuzz : 0.1});
 	let metal_2 = Box::new( Metal {albedo : Color::new (0.8,0.95,0.75), fuzz : 0.01});
 
@@ -96,14 +99,15 @@ fn main() {
 	objects.push(Box::new( Sphere{ center : Vec3::new(  0.4, -0.8, 2.0 ) , radius :0.1, material : metal_1.clone() }));
 	objects.push(Box::new( Sphere{ center : Vec3::new(  0.3, -0.7, 2.3 ) , radius :0.15, material : glass }));
 
-	objects.push(Box::new( Plane{ normal : Vec3::new(  0.0, 1.0, 0.0 ) , d :0.9, material : lambertian }));
+	let plane_material = Box::new( Lambertian { albedo : Rc::new( ChessTexture{color_a : Color::new (0.0, 0.0, 0.0), color_b :Color::new (1.0, 1.0, 1.0), scale : 1.0}) } );
+	objects.push(Box::new( Plane{ normal : Vec3::new(  0.0, 1.0, 0.0 ) , d :0.9, material : plane_material }));
 
 	for x in 0..800 {
 		for y in 0..600{
 
 			let mut color_accm = Color::new  (0.0, 0.0, 0.0);
 
-			let smpl = 5;
+			let smpl = 200;
 			let rfactor = 1.1;
 
 			for _ in 0..smpl {
@@ -124,7 +128,7 @@ fn main() {
 
 			c.point( x, y, color_accm.as_u32() );
 		}
-		if x % 10 == 0 {
+		if x % 20 == 0 {
 			c.present();
 			c.poll_events();
 			println!("{:?}", x);

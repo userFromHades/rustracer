@@ -2,22 +2,25 @@
 use crate::vec_math::*;
 use crate::random::*;
 use crate::color::*;
+use crate::texture::*;
+
+use std::rc::Rc;
 
 pub trait Material  { 
-	fn scatter( &self, dir: &Vec3, normal: &Vec3, pos: &Vec3  ) -> (Ray, Color );
+	fn scatter( &self, dir: &Vec3, normal: &Vec3, pos: &Vec3, u : f32, v : f32  ) -> (Ray, Color );
 }
 
-#[derive( Copy, Clone )]
+#[derive(  Clone )]
 pub struct Lambertian {
-	pub albedo : Color
+	pub albedo : Rc<Texture>
 }
 
 impl Material for Lambertian {
-	fn scatter( &self, dir: &Vec3, normal: &Vec3, pos: &Vec3) -> (Ray, Color )
+	fn scatter( &self, dir: &Vec3, normal: &Vec3, pos: &Vec3, u : f32, v : f32) -> (Ray, Color )
 	{
 		let new_dir =  normal + random_in_unit_sphere();
 		let new_ray = Ray::new( pos, &new_dir );
-		(new_ray, self.albedo.clone())
+		(new_ray, self.albedo.value(u,v))
 	}
 }
 
@@ -28,7 +31,7 @@ pub struct Metal {
 }
 
 impl Material for Metal {
-	fn scatter( &self, dir: &Vec3, normal: &Vec3, pos: &Vec3  ) -> (Ray, Color )
+	fn scatter( &self, dir: &Vec3, normal: &Vec3, pos: &Vec3, u : f32, v : f32  ) -> (Ray, Color )
 	{
 		let reflected = reflect(dir, normal) +  self.fuzz * random_in_unit_sphere();;
 		let new_ray = Ray::new(pos, &reflected );
@@ -50,7 +53,7 @@ fn schlick(cos :f32, ref_idx : f32) ->f32 {
 }
 
 impl Material for Glass {
-	fn scatter( &self, dir: &Vec3, normal: &Vec3, pos: &Vec3  ) -> (Ray, Color )
+	fn scatter( &self, dir: &Vec3, normal: &Vec3, pos: &Vec3, u : f32, v : f32  ) -> (Ray, Color )
 	{
 
 		let (outward, ref_idx, cos) = if dot_product(dir, normal) > 0.0 {
