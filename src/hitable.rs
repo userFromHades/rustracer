@@ -2,10 +2,11 @@
 use crate::vec_math::*;
 use crate::material::*;
 use crate::color::*;
+use crate::random::*;
 
 pub struct Hit {
 	pub distance :f32,
-	pub pos : Vec3, //Todo already in scattered
+	pub pos : Vec3, //Todo is already  in scattered
 	pub normal : Vec3,
 	pub scattered : Ray,
 	pub albedo : Color,
@@ -106,6 +107,32 @@ impl Hitable for Plane {
 	}
 }
 
+pub struct GlobalMedium {
+	pub density : f32
+}
+
+impl Hitable for GlobalMedium{
+	fn hit( &self, ray: &Ray ) -> Option<Hit>{
+
+		let distance = -(1.0/self.density) / random().ln();
+
+		if distance > 6.0 { //It's dirty trick
+			return None;
+		}
+
+		let hit_point = ray.get_point(distance);
+		let n = random_in_unit_sphere();
+
+		return Some( Hit{
+			distance,
+			pos : hit_point.clone(),
+			normal: n.clone(),
+			scattered : Ray::new(&hit_point, &n ),
+			albedo : Color::new(0.5,0.9,0.9),
+			emited : Color::new(0.0,0.0,0.0)
+		} );
+	}
+}
 
 #[cfg(test)]
 mod tests {

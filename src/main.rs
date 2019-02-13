@@ -27,7 +27,7 @@ fn find_colour (ray : &Ray, objects: & Vec<Box<Hitable>>,
                 depth : i32) -> Color
 {
 
-	if depth > 15 {
+	if depth > 50 {
 		return Color::new ( 0.0, 0.0, 0.0 );
 	}
 
@@ -92,6 +92,7 @@ fn main() {
 	let glass = Box::new( Glass {albedo : Color::new (0.95,0.95,1.0), ref_idx : 1.5});
 
 	let mut objects: Vec<Box<Hitable>> = Vec::new();
+	objects.push(Box::new( GlobalMedium { density : 0.15 } ) );
 	objects.push(Box::new( Sphere{ center : Vec3::new(  0.5, -0.6, 5.0 ) , radius :0.3, material : material.clone() }));
 	objects.push(Box::new( Sphere{ center : Vec3::new( -0.6, 0.0, 1.9 ) , radius :0.15, material : glass.clone() }));
 	objects.push(Box::new( Sphere{ center : Vec3::new( -0.8, 0.0, 3.0 ) , radius :0.9, material : material.clone() }));
